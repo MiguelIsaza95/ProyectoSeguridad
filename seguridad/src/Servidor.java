@@ -103,7 +103,7 @@ public class Servidor {
 						return;
 					}
 					for (PrintWriter writer : writers) {
-						// aqui es donde envia con el nombre de quien lo mand
+						// aqui es donde envia con el nombre de quien lo manda
 						writer.println("MESSAGE " + name + ": " + input);
 					}
 				}

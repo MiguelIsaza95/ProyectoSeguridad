@@ -58,7 +58,7 @@ public class Cliente {
 				// aqui cifra
 
 				try {
-					String envio = EncriptacionMensajes.encrypt(key, iv, textField.getText());
+					String envio = EncriptacionMensajes.encriptar(key, iv, textField.getText());
 					System.out.println("cifrado " + envio);
 					out.println(envio);
 					textField.setText("");
@@ -77,8 +77,10 @@ public class Cliente {
 	}
 
 	private String getName() {
-		return JOptionPane.showInputDialog(frame, "Choose a screen name:", "Screen name selection",
+		String name = JOptionPane.showInputDialog(frame, "Choose a screen name:", "Screen name selection",
 				JOptionPane.PLAIN_MESSAGE);
+		frame.setTitle("Chat: "+ name);
+		return name;
 	}
 
 	private void run() throws Exception {
@@ -98,7 +100,7 @@ public class Cliente {
 			// recibe
 			String line = in.readLine();
 			if (line.startsWith("SUBMITNAME")) {
-				// envia el nbombre
+				// envia el nombre
 				out.println(getName());
 
 			} else if (line.startsWith("NAMEACCEPTED")) {
@@ -106,10 +108,10 @@ public class Cliente {
 				textField.setEditable(true);
 			} else if (line.startsWith("MESSAGE")) {
 				String rec = line.substring(8);
-				String[] epa = rec.split(":");
-				System.out.println("encritptado c:" + epa[1].trim());
-				String desen = EncriptacionMensajes.decrypt(key, iv, epa[1].trim());
-				messageArea.append(epa[0] + ": " + desen + "\n");
+				String[] contenidoMensaje = rec.split(":");
+				System.out.println("encritptado c:" + contenidoMensaje[1].trim());
+				String desen = EncriptacionMensajes.desencriptar(key, iv, contenidoMensaje[1].trim());
+				messageArea.append(contenidoMensaje[0] + ": " + desen + "\n");
 			}
 		}
 	}
