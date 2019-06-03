@@ -29,7 +29,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-public class ChatClient {
+public class Cliente {
 
 	public final static String key = "ESTEESELVECTORPR";
 	public final static String iv = "ESTEESELVECTORPR";
@@ -41,7 +41,7 @@ public class ChatClient {
 	private JTextArea messageArea = new JTextArea(8, 40);
 
 
-	public ChatClient() {
+	public Cliente() {
 
 		textField.setEditable(false);
 		messageArea.setEditable(false);
@@ -58,7 +58,7 @@ public class ChatClient {
 				// aqui cifra
 
 				try {
-					String envio = StringEncrypt.encrypt(key, iv, textField.getText());
+					String envio = EncriptacionMensajes.encrypt(key, iv, textField.getText());
 					System.out.println("cifrado " + envio);
 					out.println(envio);
 					textField.setText("");
@@ -107,15 +107,15 @@ public class ChatClient {
 			} else if (line.startsWith("MESSAGE")) {
 				String rec = line.substring(8);
 				String[] epa = rec.split(":");
-				System.out.println("encritptado serivido:" + epa[1].trim());
-				String desen = StringEncrypt.decrypt(key, iv, epa[1].trim());
+				System.out.println("encritptado c:" + epa[1].trim());
+				String desen = EncriptacionMensajes.decrypt(key, iv, epa[1].trim());
 				messageArea.append(epa[0] + ": " + desen + "\n");
 			}
 		}
 	}
 
 	public static void main(String[] args) throws Exception {
-		ChatClient client = new ChatClient();
+		Cliente client = new Cliente();
 		client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		client.frame.setVisible(true);
 		client.run();

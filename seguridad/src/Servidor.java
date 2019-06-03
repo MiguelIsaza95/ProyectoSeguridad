@@ -22,7 +22,7 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class ChatServer {
+public class Servidor {
 
 	private static final int PORT = 9001;
 

@@ -4,7 +4,7 @@ import javax.crypto.spec.SecretKeySpec;
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
 import static org.apache.commons.codec.binary.Base64.encodeBase64;
 
-public class StringEncrypt {
+public class EncriptacionMensajes {
 
 	// Definición del tipo de algoritmo a utilizar (AES, DES, RSA)
 	private final static String alg = "AES";
