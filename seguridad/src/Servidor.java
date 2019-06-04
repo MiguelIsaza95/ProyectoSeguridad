@@ -127,6 +127,7 @@ public class Servidor {
 						
 						// Aquí es donde se envía el nombre de quien envía el mensaje y el mensaje
 						writer.println("MESSAGE " + name + ": " + input);
+						System.out.println("MESSAGE " + name + ": " + input);
 					}
 				}
 			} catch (IOException e) {
