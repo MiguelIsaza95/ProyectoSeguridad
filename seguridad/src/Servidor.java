@@ -22,14 +22,27 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+/**
+ * Clase encargada de establecer una comunicación entre clientes para el intercambio de mensajes.
+ * @author Miguel Isaza, Steven Montealegre, Cristian Morales
+ *
+ */
 public class Servidor {
 
+	// Puerto por el cual el servidor espera la conexión del cliente
 	private static final int PORT = 9001;
 
+	// Hash donde se registran los nombres de los usuarios.
 	private static HashSet<String> names = new HashSet<String>();
 
+	// Hash donde se registra el mensaje a enviar
 	private static HashSet<PrintWriter> writers = new HashSet<PrintWriter>();
 
+	/**
+	 * Aquí el servidor espera a la conección de los clientes que quieren comunicarse
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("The chat server is running.");
 
@@ -43,16 +56,28 @@ public class Servidor {
 		}
 	}
 
+	/**
+	 * Clase encargada de intercambiar claves con los clientes y encargada de establecer una comunicación entre
+	 * estos
+	 * @author Miguel Isaza, Steven Montealegre, Cristian Morales
+	 *
+	 */
 	private static class Handler extends Thread {
+		
+		//Variables de la clase
 		private String name;
 		private Socket socket;
 		private BufferedReader in;
 		private PrintWriter out;
 
+		// Se recibe la conexión del cliente
 		public Handler(Socket socket) {
 			this.socket = socket;
 		}
 
+		/**
+		 * Se ejecuta el socket
+		 */
 		public void run() {
 			try {
 
@@ -67,13 +92,14 @@ public class Servidor {
 						try {
 							diffieservidor();
 						} catch (InvalidKeyException | NoSuchAlgorithmException | InvalidAlgorithmParameterException
-								| ClassNotFoundException e) { // TODO Auto-generated catch block
+								| ClassNotFoundException e) {
 							e.printStackTrace();
 						}
 					}
 
 					out.println("SUBMITNAME");
-					// recibe el nombre
+					
+					// Recibe el nombre del usuario
 					name = in.readLine();
 					if (name == null) {
 						return;
@@ -87,15 +113,13 @@ public class Servidor {
 					}
 				}
 
-				//
-				// envia que el nombre es aceptado y lo agrega a los escritores
-				// para ver si ese nombre de
+				// Envia que el nombre es aceptado y lo agrega a los escritores para ver si ese nombre de
 				// cliente ya existe
 				out.println("NAMEACCEPTED");
 				writers.add(out);
 
 				while (true) {
-					// recibe el mensaje
+					// Recibe el mensaje
 					String input = in.readLine();
 					System.out.println("encriptado en el servidor " + input);
 
@@ -103,7 +127,8 @@ public class Servidor {
 						return;
 					}
 					for (PrintWriter writer : writers) {
-						// aqui es donde envia con el nombre de quien lo manda
+						
+						// Aquí es donde se envía el nombre de quien envía el mensaje y el mensaje
 						writer.println("MESSAGE " + name + ": " + input);
 					}
 				}
@@ -125,6 +150,14 @@ public class Servidor {
 		}
 	}
 
+	/**
+	 * Método encargado de generar la clave pública del servidor para intercambiarla con el cliente
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidAlgorithmParameterException
+	 * @throws ClassNotFoundException
+	 * @throws InvalidKeyException
+	 */
 	public static void diffieservidor() throws IOException, NoSuchAlgorithmException,
 			InvalidAlgorithmParameterException, ClassNotFoundException, InvalidKeyException {
 		int bitLength = 1024;
@@ -134,9 +167,11 @@ public class Servidor {
 
 		// VARIABLE PARA MANEJAR MENSAJES DEL CLIENTE
 		String entry;
+		
 		// SOCKET QUE DEJA AL SERVIDOR ESPERANDO
 		ServerSocket socketServidor = new ServerSocket(15210);
 		System.out.println("Ya inicializo el SocketServidor");
+		
 		// ESPERA QUE SE CONECTE EL CLIENTE
 		Socket client = socketServidor.accept();
 		System.out.println("Ya se conecto el usuario para la descarga");
@@ -148,14 +183,12 @@ public class Servidor {
 		BufferedReader inFromClient = new BufferedReader(new InputStreamReader(client.getInputStream()));
 		BufferedWriter OutFromServer = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
 
-		
-	
-
 		// GENERACION DE CLAVE COMPARTIDA POR MEDIO DEL ALGORITMO DIFFIE HELLMAN
 		OutFromServer.write("GENERAR DH\n");
 		OutFromServer.flush();
 		entry = inFromClient.readLine();
 		System.out.println("From Client: " + entry);
+		
 		// g = random(k);
 		SecureRandom rnd = new SecureRandom();
 		g = BigInteger.probablePrime(bitLength, rnd);
@@ -168,18 +201,24 @@ public class Servidor {
 		System.out.println(entry);
 		p = new BigInteger(entry);
 		System.out.println("Parametro P: " + p + "");
-		DHParameterSpec dhParams = new DHParameterSpec(g, p); // CREA LOS PARAMETROS PARA LA CREACION DE LA CLAVE
+		
+		// CREA LOS PARAMETROS PARA LA CREACION DE LA CLAVE
+		DHParameterSpec dhParams = new DHParameterSpec(g, p);
 		System.out.println("parametros diffie Hellman generados");
-		KeyPairGenerator serverKeyGen = KeyPairGenerator.getInstance("DH");// DECLARAR EL GENERADOR DE CLAVES EN MODO DH
-																			// - Diffie Hellman
+		
+		// DECLARAR EL GENERADOR DE CLAVES EN MODO DH - Diffie Hellman
+		KeyPairGenerator serverKeyGen = KeyPairGenerator.getInstance("DH");
 		serverKeyGen.initialize(dhParams, new SecureRandom()); //
 		KeyAgreement serverKeyAgree = KeyAgreement.getInstance("DH");
 		KeyPair serverPair = serverKeyGen.generateKeyPair();
 
-		Key clientePublicKey = (Key) ois.readObject(); // RECIBE CLAVE PUBLICA DEL CLIENTE
+		// RECIBE CLAVE PUBLICA DEL CLIENTE
+		Key clientePublicKey = (Key) ois.readObject();
 		System.out.println("Recibi clave publica cliente: " + clientePublicKey.toString());
 		oos.writeObject(serverPair.getPublic());
-		oos.flush(); // ENVIA CLAVE PUBLICA DEL SERVIDOR
+		
+		// ENVIA CLAVE PUBLICA DEL SERVIDOR
+		oos.flush();
 		System.out.println("Envie clave publia (servidor): " + serverPair.getPublic().toString());
 		serverKeyAgree.init(serverPair.getPrivate());
 		serverKeyAgree.doPhase(clientePublicKey, true);

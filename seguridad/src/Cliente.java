@@ -1,11 +1,15 @@
 
+/**
+ * Proyecto chat cifrado seguridad.
+ * Universidad Icesi
+ * @author Miguel Isaza, Steven Montealegre, Cristian Morales
+ * @version: 3/6/2019
+ */
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -22,17 +26,24 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.DHParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+
+/**
+ * Esta clase se encarga de generar la clave privada a intercambiar con el servidor para establecer una comunicación
+ * Permite el intercambio de mensaje entre clientes.
+ * @author Miguel Isaza, Steven Montealegre, Cristian Morales
+ *
+ */
 public class Cliente {
 
-	public final static String key = "ESTEESELVECTORPR";
-	public final static String iv = "ESTEESELVECTORPR";
+	// Variables para generar la clave publica y privada a intercambiar con el servidor.
+	public final static String key = "92AE31A79FEEB2A3";
+	public final static String iv = "0123456789ABCDEF";
 
 	private BufferedReader in;
 	private PrintWriter out;
@@ -40,9 +51,10 @@ public class Cliente {
 	private JTextField textField = new JTextField(40);
 	private JTextArea messageArea = new JTextArea(8, 40);
 
-
+/**
+ * Constructor de la clase cliente, se crea la interfaz gráfica para iniciar el chat.
+ */
 	public Cliente() {
-
 		textField.setEditable(false);
 		messageArea.setEditable(false);
 		frame.getContentPane().add(textField, "North");
@@ -53,14 +65,11 @@ public class Cliente {
 		textField.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-				// escribe y lo envia
-
-				// aqui cifra
-
+				// Se escribe el mensaje, se encripta y se envía
 				try {
-					String envio = EncriptacionMensajes.encriptar(key, iv, textField.getText());
-					System.out.println("cifrado " + envio);
-					out.println(envio);
+					String mensaje = EncriptacionMensajes.encriptar(key, iv, textField.getText());
+					System.out.println("Mensaje cifrado: " + mensaje);
+					out.println(mensaje);
 					textField.setText("");
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
@@ -71,18 +80,33 @@ public class Cliente {
 		});
 	}
 
+	/**
+	 * Método que se encarga de obtener la dirección IP del servidor con el que se van a intercambiar las claves.
+	 * @return Dirección IP del servidor.
+	 */
 	private String getServerAddress() {
-		return JOptionPane.showInputDialog(frame, "Enter IP Address of the Server:", "Welcome to the Chatter",
-				JOptionPane.QUESTION_MESSAGE);
+		String ip = JOptionPane.showInputDialog(frame, "Enter IP Address of the Server:", "Welcome to the Chatter",
+				JOptionPane.QUESTION_MESSAGE); 
+		return ip;
 	}
 
+	/**
+	 * Método encargado de obtener el nombre del usuario para iniciar el chat.
+	 * @return Nombre del usuario que se une al chat
+	 */
 	private String getName() {
 		String name = JOptionPane.showInputDialog(frame, "Choose a screen name:", "Screen name selection",
 				JOptionPane.PLAIN_MESSAGE);
 		frame.setTitle("Chat: "+ name);
 		return name;
 	}
-
+/**
+ * Aquí se generan la clave a intercambiar con el servidor usando Diffie-Hellman. Además, aquí se habilita 
+ * el chat del cliente con el fin de establecer una comunicación con otro usuario, durante la comunicación 
+ * todos los mensaje serán encriptados con el algoritmo AES de 128 bits.
+ * @throws Exception
+ */
+	@SuppressWarnings("resource")
 	private void run() throws Exception {
 
 		// Make connection and initialize streams
@@ -97,14 +121,16 @@ public class Cliente {
 
 		while (true) {
 
-			// recibe
+			// Recibe el nombre del usuario
 			String line = in.readLine();
 			if (line.startsWith("SUBMITNAME")) {
-				// envia el nombre
+				
+				// Se envía el nombre del usuario
 				out.println(getName());
 
 			} else if (line.startsWith("NAMEACCEPTED")) {
-				// recibe el nombre del cliente y luego permite escribir
+				
+				// Recibe el nombre del cliente y luego permite escribir
 				textField.setEditable(true);
 			} else if (line.startsWith("MESSAGE")) {
 				String rec = line.substring(8);
@@ -115,7 +141,11 @@ public class Cliente {
 			}
 		}
 	}
-
+/**
+ * Método encargado de ejecutar el socket del cliente para realizar sus respectivas funcionalidades.
+ * @param args
+ * @throws Exception
+ */
 	public static void main(String[] args) throws Exception {
 		Cliente client = new Cliente();
 		client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -124,15 +154,22 @@ public class Cliente {
 
 	}
 
+	/**
+	 * Aquí se emplea el algoritmo Diffie-Hellman para el intercambio de claves
+	 * @param ip, dirección ip del servidor con quien intercambiará claves.
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidAlgorithmParameterException
+	 * @throws ClassNotFoundException
+	 * @throws InvalidKeyException
+	 */
 	public static void diffiecliente(String ip) throws IOException, NoSuchAlgorithmException,
 			InvalidAlgorithmParameterException, ClassNotFoundException, InvalidKeyException {
 
 		// Se declaran las variables de las llaves
 		BigInteger p;
 		BigInteger g;
-
-		// Se declara la clase para desencriptar
-
+		
 		// Se declaran las variables de lectura, almacenamiento y control
 		String parametro;
 
@@ -191,12 +228,8 @@ public class Cliente {
 		// Clave publica del servidor
 		clienteKeyAgree.doPhase(serverPublicKey, true);
 
-		// Genera la clave secreta
-		byte[] clienteSharedSecret = clienteKeyAgree.generateSecret();
-		SecretKeySpec claveCliente = new SecretKeySpec(clienteSharedSecret, 0, 16, "AES");
-
 		socketCliente.close();
-		System.out.println("intercambio exitoso cliente======================");
+		System.out.println("Intercambio de claves exitoso");
 
 	}
 
