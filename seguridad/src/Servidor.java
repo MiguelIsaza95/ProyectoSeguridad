@@ -208,7 +208,7 @@ public class Servidor {
 		
 		// ENVIA CLAVE PUBLICA DEL SERVIDOR
 		oos.flush();
-		System.out.println("Envie clave publia (servidor): " + serverPair.getPublic().toString());
+		System.out.println("Clave publia servidor: " + serverPair.getPublic().toString());
 		serverKeyAgree.init(serverPair.getPrivate());
 		serverKeyAgree.doPhase(clientePublicKey, true);
 		socketServidor.close();

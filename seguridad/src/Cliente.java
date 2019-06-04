@@ -207,17 +207,20 @@ public class Cliente {
 
 		// Se obtiene la clave publica y se transmite al servidor
 		oos.writeObject(clientePair.getPublic());
-
+		System.out.println("Clave publia cliente: " + clientePair.getPublic().toString());
+		
 		// Se obtiene la clave publica del servidor
 		Key serverPublicKey = (Key) ois.readObject();
 
 		// Se crea el keyagreemente para comprobar las llaves
 		KeyAgreement clienteKeyAgree = KeyAgreement.getInstance("DH");
+		
 		// Clave privada del cliente
 		clienteKeyAgree.init(clientePair.getPrivate());
+		
 		// Clave publica del servidor
 		clienteKeyAgree.doPhase(serverPublicKey, true);
-
 		socketCliente.close();
+		System.out.println("intercambio exitoso de claves");
 	}
 }
