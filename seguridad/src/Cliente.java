@@ -68,7 +68,6 @@ public class Cliente {
 				// Se escribe el mensaje, se encripta y se envía
 				try {
 					String mensaje = EncriptacionMensajes.encriptar(key, iv, textField.getText());
-					System.out.println("Mensaje cifrado: " + mensaje);
 					out.println(mensaje);
 					textField.setText("");
 				} catch (Exception e1) {
@@ -114,9 +113,7 @@ public class Cliente {
 		Socket socket = new Socket(serverAddress, 9001);
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		out = new PrintWriter(socket.getOutputStream(), true);
-
 		out.println("diffie");
-
 		diffiecliente(serverAddress);
 
 		while (true) {
@@ -135,7 +132,6 @@ public class Cliente {
 			} else if (line.startsWith("MESSAGE")) {
 				String rec = line.substring(8);
 				String[] contenidoMensaje = rec.split(":");
-				System.out.println("encritptado c:" + contenidoMensaje[1].trim());
 				String desen = EncriptacionMensajes.desencriptar(key, iv, contenidoMensaje[1].trim());
 				messageArea.append(contenidoMensaje[0] + ": " + desen + "\n");
 			}
@@ -151,7 +147,6 @@ public class Cliente {
 		client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		client.frame.setVisible(true);
 		client.run();
-
 	}
 
 	/**
@@ -186,7 +181,6 @@ public class Cliente {
 
 		// Lectura de la orden de inicio del servidor
 		parametro = inFromServer.readLine();
-		System.out.println("Mensaje del servidor: " + parametro);
 		if (parametro.equalsIgnoreCase("GENERAR DH")) {
 
 			// Mensaje de confirmacion al servidor
@@ -196,13 +190,11 @@ public class Cliente {
 
 		// Lectura del parametro G del servidor
 		parametro = inFromServer.readLine();
-		System.out.println("Me llega parametro G: " + parametro);
 		g = new BigInteger(parametro);
 
 		// Se genera el parametro P del cliente
 		SecureRandom secureP = new SecureRandom();
 		p = BigInteger.probablePrime(1024, secureP);
-		System.out.println("parametro p cliente: " + p.toString());
 		// Transmision del parametro P
 		OutFromClient.write(p.toString() + "\n");
 		OutFromClient.flush();
@@ -212,14 +204,12 @@ public class Cliente {
 		KeyPairGenerator clienteKeyGen = KeyPairGenerator.getInstance("DH");
 		clienteKeyGen.initialize(dhParams, new SecureRandom());
 		KeyPair clientePair = clienteKeyGen.generateKeyPair();
-		System.out.println("clave publica cliente " + clientePair.getPublic());
 
 		// Se obtiene la clave publica y se transmite al servidor
 		oos.writeObject(clientePair.getPublic());
 
 		// Se obtiene la clave publica del servidor
 		Key serverPublicKey = (Key) ois.readObject();
-		System.out.println(serverPublicKey.toString());
 
 		// Se crea el keyagreemente para comprobar las llaves
 		KeyAgreement clienteKeyAgree = KeyAgreement.getInstance("DH");
@@ -229,8 +219,5 @@ public class Cliente {
 		clienteKeyAgree.doPhase(serverPublicKey, true);
 
 		socketCliente.close();
-		System.out.println("Intercambio de claves exitoso");
-
 	}
-
 }

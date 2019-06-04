@@ -20,7 +20,6 @@ import java.util.HashSet;
 
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.DHParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Clase encargada de establecer una comunicación entre clientes para el intercambio de mensajes.
@@ -44,7 +43,6 @@ public class Servidor {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		System.out.println("The chat server is running.");
 
 		ServerSocket listener = new ServerSocket(PORT);
 		try {
@@ -121,7 +119,6 @@ public class Servidor {
 				while (true) {
 					// Recibe el mensaje
 					String input = in.readLine();
-					System.out.println("encriptado en el servidor " + input);
 
 					if (input == null) {
 						return;
@@ -170,11 +167,9 @@ public class Servidor {
 		
 		// SOCKET QUE DEJA AL SERVIDOR ESPERANDO
 		ServerSocket socketServidor = new ServerSocket(15210);
-		System.out.println("Ya inicializo el SocketServidor");
 		
 		// ESPERA QUE SE CONECTE EL CLIENTE
 		Socket client = socketServidor.accept();
-		System.out.println("Ya se conecto el usuario para la descarga");
 
 		// CANALES PARA INTERCAMBIAR INFORMACION
 		ObjectOutputStream oos = new ObjectOutputStream(client.getOutputStream());
@@ -187,24 +182,19 @@ public class Servidor {
 		OutFromServer.write("GENERAR DH\n");
 		OutFromServer.flush();
 		entry = inFromClient.readLine();
-		System.out.println("From Client: " + entry);
 		
 		// g = random(k);
 		SecureRandom rnd = new SecureRandom();
 		g = BigInteger.probablePrime(bitLength, rnd);
 		if (entry.equals("LISTO PARA GENERAR DH")) {
 			OutFromServer.write(g.toString() + "\n");
-			System.out.println("Parametro G generado y enviado" + "g = " + g + "");
 			OutFromServer.flush();
 		}
 		entry = inFromClient.readLine();
-		System.out.println(entry);
 		p = new BigInteger(entry);
-		System.out.println("Parametro P: " + p + "");
 		
 		// CREA LOS PARAMETROS PARA LA CREACION DE LA CLAVE
 		DHParameterSpec dhParams = new DHParameterSpec(g, p);
-		System.out.println("parametros diffie Hellman generados");
 		
 		// DECLARAR EL GENERADOR DE CLAVES EN MODO DH - Diffie Hellman
 		KeyPairGenerator serverKeyGen = KeyPairGenerator.getInstance("DH");
@@ -214,7 +204,6 @@ public class Servidor {
 
 		// RECIBE CLAVE PUBLICA DEL CLIENTE
 		Key clientePublicKey = (Key) ois.readObject();
-		System.out.println("Recibi clave publica cliente: " + clientePublicKey.toString());
 		oos.writeObject(serverPair.getPublic());
 		
 		// ENVIA CLAVE PUBLICA DEL SERVIDOR
@@ -222,12 +211,8 @@ public class Servidor {
 		System.out.println("Envie clave publia (servidor): " + serverPair.getPublic().toString());
 		serverKeyAgree.init(serverPair.getPrivate());
 		serverKeyAgree.doPhase(clientePublicKey, true);
-		byte[] serverSharedSecret = serverKeyAgree.generateSecret();
-		SecretKeySpec claveServer = new SecretKeySpec(serverSharedSecret, 0, 16, "AES");
-		System.out.println("Clave secreta: " + claveServer.toString());
-
 		socketServidor.close();
-		System.out.println("intercambio exitoso servidor======================");
+		System.out.println("intercambio exitoso de claves");
 
 	}
 
